@@ -1,0 +1,364 @@
+/* =========================================================
+   メモ帳アプリ 共通スタイルシート
+   ・index.html（基本画面）と detail.html（詳細画面）の
+     両方から読み込む共通の style.css です。
+   ・機能要件書「レイアウト図(基本画面)」「レイアウト図(詳細画面)」
+     を元にした静的な描画のみを目的としており、
+     機能（クリック処理・入力処理・保存処理等）は一切含みません。
+   ========================================================= */
+
+:root {
+  --color-bg-page: #eef1f5;
+  --color-bg-panel: #ffffff;
+  --color-bg-accent: #dde6f0;   /* 見出し・タイトルバー背景（元Excelの塗りつぶし色） */
+  --color-border: #c7d2e0;
+  --color-border-strong: #9fb0c7;
+  --color-text: #1f2933;
+  --color-text-sub: #52606d;
+  --color-accent: #3b6ea5;
+  --color-accent-dark: #2c527c;
+  --color-today-bg: #3b6ea5;
+  --color-today-text: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic",
+    "Noto Sans JP", "Meiryo", sans-serif;
+  background: var(--color-bg-page);
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+/* -------------------------------------------------
+   画面全体（16:9固定比率）- 両画面共通
+------------------------------------------------- */
+.screen-wrapper {
+  width: 100%;
+  max-width: 1280px;
+}
+
+.app-screen {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(31, 41, 51, 0.12);
+  overflow: hidden;
+}
+
+/* -------------------------------------------------
+   画面タイトル（①基本画面 / ⑬詳細画面）- 両画面共通
+------------------------------------------------- */
+.title-bar {
+  flex: 0 0 auto;
+  background: var(--color-bg-accent);
+  border-bottom: 1px solid var(--color-border);
+  padding: 14px 24px;
+}
+
+.title-bar__text {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* -------------------------------------------------
+   3カラムのコンテンツエリア - 両画面共通の骨格
+   幅比率 = 7 : 14 : 7 （元レイアウト図の列数と同じ 1:2:1）
+   各カラムの実際の幅・区切り線は画面ごとの
+   .panel--xxx 修飾クラス側で指定します。
+------------------------------------------------- */
+.content-area {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ToDoリスト列（④基本画面 / ⑮詳細画面）は両画面とも
+   一番右のカラムで、幅比率は 1（区切り線なし）- 両画面共通 */
+.panel--todo {
+  flex: 1 1 0;
+}
+
+.panel__heading {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+  background: var(--color-bg-accent);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.panel__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 16px;
+  overflow: auto;
+}
+
+/* ToDoリスト表示（⑦基本画面 / ⑳詳細画面）- 両画面共通 -------- */
+.todo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.todo-list__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--color-text);
+}
+
+.todo-list__check {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 4px;
+  background: var(--color-bg-panel);
+}
+
+.todo-list__item.is-done .todo-list__check {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.todo-list__item.is-done .todo-list__label {
+  color: var(--color-text-sub);
+  text-decoration: line-through;
+}
+
+/* -------------------------------------------------
+   フッターの操作ボタン（⑨基本画面 / ⑱⑲詳細画面）- 両画面共通
+------------------------------------------------- */
+.action-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px;
+  background: var(--color-bg-accent);
+  border-top: 1px solid var(--color-border);
+}
+
+.action-bar__button {
+  min-width: 120px;
+  padding: 8px 32px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent-dark);
+  border-radius: 6px;
+  cursor: default;
+}
+
+/* 詳細画面「戻る」ボタンのみで使用するサブスタイル */
+.action-bar__button--sub {
+  color: var(--color-accent-dark);
+  background: var(--color-bg-panel);
+  border-color: var(--color-border-strong);
+}
+
+
+/* =========================================================
+   基本画面（index.html）専用スタイル
+   ②見出し1・⑤表示：本日のメモ / ③見出し2・⑥⑧：カレンダー
+   ④見出し3・⑦表示：ToDoリスト
+   ========================================================= */
+
+.panel--memo {
+  flex: 1 1 0;
+  border-right: 1px solid var(--color-border);
+}
+
+.panel--calendar {
+  flex: 2 1 0;
+  border-right: 1px solid var(--color-border);
+}
+
+/* ⑤表示：本日のメモ -------------------------------- */
+.memo-text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.9;
+  color: var(--color-text-sub);
+}
+
+/* ⑥表示・⑧選択：カレンダー -------------------------- */
+.calendar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.calendar__month {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text-sub);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.calendar__table {
+  width: 100%;
+  height: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.calendar__table th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-sub);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.calendar__table th.is-sun {
+  color: #c0564f;
+}
+
+.calendar__table th.is-sat {
+  color: var(--color-accent);
+}
+
+.calendar__table td {
+  text-align: center;
+  vertical-align: middle;
+  font-size: 0.8rem;
+  color: var(--color-text);
+  padding: 2px;
+}
+
+.calendar__table td.is-blank {
+  color: transparent;
+}
+
+.calendar__day {
+  width: 26px;
+  height: 26px;
+  line-height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  font: inherit;
+  cursor: default;
+}
+
+.is-today .calendar__day {
+  background: var(--color-today-bg);
+  color: var(--color-today-text);
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   詳細画面（detail.html）専用スタイル
+   左端：レイアウト図で空欄のまま描かれている余白領域
+   ⑭見出し4・⑯⑰：本日のメモ 各行の入力欄
+   ⑮見出し5・⑳：ToDoリスト（参照表示）
+   ========================================================= */
+
+.panel--blank {
+  flex: 1 1 0;
+}
+
+.panel--input {
+  flex: 2 1 0;
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+}
+
+/* ⑯入力・⑰選択：本日のメモ 各行の入力欄 ---------------- */
+.input-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.input-list__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.input-list__field {
+  flex: 1 1 auto;
+  min-width: 0;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border-strong);
+  padding: 4px 2px;
+}
+
+.input-list__field::placeholder {
+  color: #a7b3c2;
+}
+
+.input-list__check {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 3px;
+  background: var(--color-bg-panel);
+  position: relative;
+}
+
+.input-list__check.is-checked {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.input-list__check.is-checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  transform: rotate(45deg);
+}

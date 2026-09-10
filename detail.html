@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>本日のメモ - 詳細画面</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 16:9 の詳細画面 -->
+  <div class="screen-wrapper">
+    <main class="app-screen">
+
+      <!-- ⑬画面タイトル -->
+      <header class="title-bar">
+        <h1 class="title-bar__text">本日のメモ</h1>
+      </header>
+
+      <!-- ⑭見出し4 / ⑮見出し5 + ⑯入力・⑰選択 + ⑳表示 -->
+      <div class="content-area">
+
+        <!-- 左側：レイアウト図上、余白として空けられている領域 -->
+        <section class="panel panel--blank" aria-hidden="true"></section>
+
+        <!-- ⑭見出し4 / ⑯入力・⑰選択：本日のメモ 各行の入力欄 -->
+        <section class="panel panel--input">
+          <h2 class="panel__heading">2026/09/10</h2>
+          <div class="panel__body">
+            <ul class="input-list">
+              <li class="input-list__row">
+                <input type="text" class="input-list__field" value="14:00〜 定例会議" readonly>
+                <span class="input-list__check is-checked"></span>
+              </li>
+              <li class="input-list__row">
+                <input type="text" class="input-list__field" value="資料を事前に確認しておく" readonly>
+                <span class="input-list__check"></span>
+              </li>
+              <li class="input-list__row">
+                <input type="text" class="input-list__field" value="買い物リストの整理" readonly>
+                <span class="input-list__check"></span>
+              </li>
+              <li class="input-list__row">
+                <input type="text" class="input-list__field" value="" readonly>
+                <span class="input-list__check"></span>
+              </li>
+              <li class="input-list__row">
+                <input type="text" class="input-list__field" value="" readonly>
+                <span class="input-list__check is-checked"></span>
+              </li>
+              <li class="input-list__row">
+                <input type="text" class="input-list__field" value="" readonly>
+                <span class="input-list__check is-checked"></span>
+              </li>
+              <li class="input-list__row">
+                <input type="text" class="input-list__field" value="" readonly>
+                <span class="input-list__check"></span>
+              </li>
+              <li class="input-list__row">
+                <input type="text" class="input-list__field" value="" readonly>
+                <span class="input-list__check"></span>
+              </li>
+              <li class="input-list__row">
+                <input type="text" class="input-list__field" value="" readonly>
+                <span class="input-list__check"></span>
+              </li>
+              <li class="input-list__row">
+                <input type="text" class="input-list__field" value="" readonly>
+                <span class="input-list__check"></span>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ⑮見出し5 / ⑳表示：ToDoリスト（参照表示） -->
+        <section class="panel panel--todo">
+          <h2 class="panel__heading">ToDoリスト</h2>
+          <div class="panel__body">
+            <ul class="todo-list">
+              <li class="todo-list__item">
+                <span class="todo-list__check"></span>
+                <span class="todo-list__label">企画書のレビュー</span>
+              </li>
+              <li class="todo-list__item">
+                <span class="todo-list__check"></span>
+                <span class="todo-list__label">メールの返信</span>
+              </li>
+              <li class="todo-list__item is-done">
+                <span class="todo-list__check"></span>
+                <span class="todo-list__label">週次報告の提出</span>
+              </li>
+              <li class="todo-list__item">
+                <span class="todo-list__check"></span>
+                <span class="todo-list__label">資料の印刷</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ⑱遷移・確定（戻る） / ⑲保存 -->
+      <footer class="action-bar">
+        <button type="button" class="action-bar__button action-bar__button--sub">戻る</button>
+        <button type="button" class="action-bar__button">保存</button>
+      </footer>
+
+    </main>
+  </div>
+
+  <script src="detail.js"></script>
+</body>
+</html>
