@@ -14,8 +14,9 @@
 //   処理ID   : S-001 / 処理名: 選択実行
 //   場所     : 基本画面＞識別ID:T-008（カレンダーの日付選択）
 //   アクション: 選択した日付の識別ID:T-016（本日のメモ 各行の内容）を、
-//              識別ID:T-005（本日のメモ）と識別ID:T-007（ToDoリスト）
-//              に表示させる。
+//              識別ID:T-005（本日のメモ）に表示させる。
+//   ※ 識別ID:T-007（ToDoリスト）については、下記のとおり仕様を
+//     変更したため、カレンダーの日付選択には連動しません。
 //
 // 機能一覧 No.2 を実装しています。
 //   処理ID   : S-002 / 処理名: 遷移実行
@@ -25,14 +26,22 @@
 // 機能一覧 No.3〜No.6 の結果を表示しています。
 //   詳細画面（detail.html）側でのチェック操作・保存・戻る操作の結果は、
 //   MemoStorage（storage.ts）経由でlocalStorageに保存されるため、
-//   ここでは MemoStorage.load(day) を呼ぶだけで、最新の保存内容が
+//   ここでは MemoStorage.load / loadAll を呼ぶだけで、最新の保存内容が
 //   識別ID:T-005（本日のメモ）・識別ID:T-007（ToDoリスト）に
 //   反映されます。
 //
-// ※ MemoStorage.load / save は Promise を返す非同期の窓口のため、
-//   将来 storage.ts の中身をサーバーAPI通信に置き換えても、
-//   このファイルの書き方（await MemoStorage.load(day) など）を
-//   変える必要はありません。
+// -----------------------------------------------------------
+// 【ToDoリスト（識別ID:T-007）の仕様変更】
+// 以前は「カレンダーで選択した日付のToDoだけ」を表示していましたが、
+// 保存済み（チェック済み）のToDoを日付をまたいで一覧できるように、
+// 全ての日付分をまとめて、日付ごとにグループ化して表示する形に
+// 変更しました（細い線→日付→その日のToDo、を日付の昇順で繰り返す）。
+// そのため、カレンダーで日付を選んでも識別ID:T-007の表示内容は
+// 変わりません（識別ID:T-005「本日のメモ」だけが切り替わります）。
+//
+// ※ MemoStorage.load / save / loadAll は Promise を返す非同期の
+//   窓口のため、将来 storage.ts の中身をサーバーAPI通信に
+//   置き換えても、このファイルの書き方を変える必要はありません。
 // =========================================================
 
 interface MemoLine {
@@ -45,6 +54,7 @@ interface MemoLine {
 declare const MemoStorage: {
   load(day: number): Promise<MemoLine[]>;
   save(day: number, lines: MemoLine[]): Promise<void>;
+  loadAll(): Promise<Record<number, MemoLine[]>>;
 };
 
 let selectedDay: number | null = null;
@@ -74,41 +84,79 @@ async function renderMemo(day: number): Promise<void> {
   }
 }
 
-/** 識別ID:T-007（ToDoリスト）の表示を更新する */
-async function renderTodoList(day: number): Promise<void> {
+function formatDateLabel(day: number): string {
+  const dayText = String(day).padStart(2, "0");
+  return `2026/09/${dayText}`;
+}
+
+/**
+ * 識別ID:T-007（ToDoリスト）の表示を更新する。
+ * 保存済み（チェック済み）のToDoを、日付ごとにグループ化して
+ * 日付の昇順ですべて表示する（カレンダーの日付選択には連動しない）。
+ */
+async function renderTodoListAll(): Promise<void> {
   const todoEl = document.getElementById("todo-display");
   if (!todoEl) return;
 
-  const lines = await MemoStorage.load(day);
-  const todoLabels = lines
-    .filter((line) => line.checked && line.text.trim() !== "")
-    .map((line) => line.text);
+  const allLines = await MemoStorage.loadAll();
+
+  const days = Object.keys(allLines)
+    .map((key) => Number(key))
+    .sort((a, b) => a - b);
 
   todoEl.innerHTML = "";
 
-  if (todoLabels.length === 0) {
+  let hasAnyTodo = false;
+
+  days.forEach((day) => {
+    const todoLabels = allLines[day]
+      .filter((line) => line.checked && line.text.trim() !== "")
+      .map((line) => line.text);
+
+    if (todoLabels.length === 0) return;
+    hasAnyTodo = true;
+
+    const groupLi = document.createElement("li");
+    groupLi.className = "todo-group";
+
+    const divider = document.createElement("div");
+    divider.className = "todo-group__divider";
+
+    const dateEl = document.createElement("div");
+    dateEl.className = "todo-group__date";
+    dateEl.textContent = formatDateLabel(day);
+
+    const itemsEl = document.createElement("ul");
+    itemsEl.className = "todo-group__items";
+
+    todoLabels.forEach((label) => {
+      const li = document.createElement("li");
+      li.className = "todo-list__item";
+
+      const check = document.createElement("span");
+      check.className = "todo-list__check";
+
+      const labelEl = document.createElement("span");
+      labelEl.className = "todo-list__label";
+      labelEl.textContent = label;
+
+      li.appendChild(check);
+      li.appendChild(labelEl);
+      itemsEl.appendChild(li);
+    });
+
+    groupLi.appendChild(divider);
+    groupLi.appendChild(dateEl);
+    groupLi.appendChild(itemsEl);
+    todoEl.appendChild(groupLi);
+  });
+
+  if (!hasAnyTodo) {
     const li = document.createElement("li");
     li.className = "todo-list__empty";
-    li.textContent = "この日のToDoはありません";
+    li.textContent = "登録されているToDoはありません";
     todoEl.appendChild(li);
-    return;
   }
-
-  todoLabels.forEach((label) => {
-    const li = document.createElement("li");
-    li.className = "todo-list__item";
-
-    const check = document.createElement("span");
-    check.className = "todo-list__check";
-
-    const labelEl = document.createElement("span");
-    labelEl.className = "todo-list__label";
-    labelEl.textContent = label;
-
-    li.appendChild(check);
-    li.appendChild(labelEl);
-    todoEl.appendChild(li);
-  });
 }
 
 /**
@@ -130,7 +178,6 @@ async function selectDay(day: number, dayButton: HTMLButtonElement): Promise<voi
 
   selectedDay = day;
   await renderMemo(day);
-  await renderTodoList(day);
 }
 
 /**
@@ -161,6 +208,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (initialButton) {
     void selectDay(10, initialButton);
   }
+
+  // ToDoリストは日付選択に連動しないため、初回に一度だけ描画する
+  void renderTodoListAll();
 
   const editButton = document.getElementById("edit-button");
   if (editButton) {

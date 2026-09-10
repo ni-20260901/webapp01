@@ -61,6 +61,7 @@ interface MemoLine {
 declare const MemoStorage: {
   load(day: number): Promise<MemoLine[]>;
   save(day: number, lines: MemoLine[]): Promise<void>;
+  loadAll(): Promise<Record<number, MemoLine[]>>;
 };
 
 /** URLの ?day=15 からその値を取得する（無ければ null） */

@@ -131,4 +131,24 @@ const MemoStorage = {
     writeLocalStore(store);
     return Promise.resolve();
   },
+
+  /**
+   * 既知のすべての日付（初期データがある日＋保存済みの日）の
+   * 識別ID:T-016（本日のメモ 各行）をまとめて読み込む。
+   * 基本画面のToDoリスト（識別ID:T-007）を、日付ごとにグループ化して
+   * 全件表示する際に使用する。
+   */
+  loadAll(): Promise<Record<number, MemoLine[]>> {
+    const store = readLocalStore();
+    const result: Record<number, MemoLine[]> = {};
+
+    Object.keys(DEFAULT_LINES).forEach((key) => {
+      result[Number(key)] = DEFAULT_LINES[Number(key)];
+    });
+    Object.keys(store).forEach((key) => {
+      result[Number(key)] = padLines(store[key]);
+    });
+
+    return Promise.resolve(result);
+  },
 };
