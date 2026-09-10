@@ -31,43 +31,43 @@
               <!-- JS（detail.js）が読み込み時に、選択中の日付のデータで
                    このリストを描画し直します。以下は初期表示用です。 -->
               <li class="input-list__row">
-                <input type="text" class="input-list__field" value="14:00〜 定例会議" readonly>
+                <input type="text" class="input-list__field" value="14:00〜 定例会議">
                 <input type="checkbox" class="input-list__check">
               </li>
               <li class="input-list__row">
-                <input type="text" class="input-list__field" value="資料を事前に確認しておく" readonly>
+                <input type="text" class="input-list__field" value="資料を事前に確認しておく">
                 <input type="checkbox" class="input-list__check" checked>
               </li>
               <li class="input-list__row">
-                <input type="text" class="input-list__field" value="買い物リストの整理" readonly>
+                <input type="text" class="input-list__field" value="買い物リストの整理">
                 <input type="checkbox" class="input-list__check" checked>
               </li>
               <li class="input-list__row">
-                <input type="text" class="input-list__field" value="企画書のレビューを行う" readonly>
+                <input type="text" class="input-list__field" value="企画書のレビューを行う">
                 <input type="checkbox" class="input-list__check" checked>
               </li>
               <li class="input-list__row">
-                <input type="text" class="input-list__field" value="メールの返信をする" readonly>
+                <input type="text" class="input-list__field" value="メールの返信をする">
                 <input type="checkbox" class="input-list__check">
               </li>
               <li class="input-list__row">
-                <input type="text" class="input-list__field" value="週次報告を提出する" readonly>
+                <input type="text" class="input-list__field" value="週次報告を提出する">
                 <input type="checkbox" class="input-list__check" checked>
               </li>
               <li class="input-list__row">
-                <input type="text" class="input-list__field" value="" readonly>
+                <input type="text" class="input-list__field" value="">
                 <input type="checkbox" class="input-list__check">
               </li>
               <li class="input-list__row">
-                <input type="text" class="input-list__field" value="" readonly>
+                <input type="text" class="input-list__field" value="">
                 <input type="checkbox" class="input-list__check">
               </li>
               <li class="input-list__row">
-                <input type="text" class="input-list__field" value="" readonly>
+                <input type="text" class="input-list__field" value="">
                 <input type="checkbox" class="input-list__check">
               </li>
               <li class="input-list__row">
-                <input type="text" class="input-list__field" value="" readonly>
+                <input type="text" class="input-list__field" value="">
                 <input type="checkbox" class="input-list__check">
               </li>
             </ul>
@@ -106,7 +106,8 @@
       <!-- ⑱遷移・確定（戻る） / ⑲保存 -->
       <footer class="action-bar">
         <button type="button" class="action-bar__button action-bar__button--sub">戻る</button>
-        <button type="button" class="action-bar__button">保存</button>
+        <button type="button" class="action-bar__button" id="save-button">保存</button>
+        <span id="save-status" class="save-status" aria-live="polite"></span>
       </footer>
 
     </main>
