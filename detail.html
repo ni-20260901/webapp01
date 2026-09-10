@@ -28,45 +28,47 @@
           <h2 class="panel__heading" id="date-heading">2026/09/10</h2>
           <div class="panel__body">
             <ul class="input-list" id="input-list">
+              <!-- JS（detail.js）が読み込み時に、選択中の日付のデータで
+                   このリストを描画し直します。以下は初期表示用です。 -->
               <li class="input-list__row">
                 <input type="text" class="input-list__field" value="14:00〜 定例会議" readonly>
-                <span class="input-list__check is-checked"></span>
+                <input type="checkbox" class="input-list__check">
               </li>
               <li class="input-list__row">
                 <input type="text" class="input-list__field" value="資料を事前に確認しておく" readonly>
-                <span class="input-list__check"></span>
+                <input type="checkbox" class="input-list__check" checked>
               </li>
               <li class="input-list__row">
                 <input type="text" class="input-list__field" value="買い物リストの整理" readonly>
-                <span class="input-list__check"></span>
+                <input type="checkbox" class="input-list__check" checked>
+              </li>
+              <li class="input-list__row">
+                <input type="text" class="input-list__field" value="企画書のレビューを行う" readonly>
+                <input type="checkbox" class="input-list__check" checked>
+              </li>
+              <li class="input-list__row">
+                <input type="text" class="input-list__field" value="メールの返信をする" readonly>
+                <input type="checkbox" class="input-list__check">
+              </li>
+              <li class="input-list__row">
+                <input type="text" class="input-list__field" value="週次報告を提出する" readonly>
+                <input type="checkbox" class="input-list__check" checked>
               </li>
               <li class="input-list__row">
                 <input type="text" class="input-list__field" value="" readonly>
-                <span class="input-list__check"></span>
+                <input type="checkbox" class="input-list__check">
               </li>
               <li class="input-list__row">
                 <input type="text" class="input-list__field" value="" readonly>
-                <span class="input-list__check is-checked"></span>
+                <input type="checkbox" class="input-list__check">
               </li>
               <li class="input-list__row">
                 <input type="text" class="input-list__field" value="" readonly>
-                <span class="input-list__check is-checked"></span>
+                <input type="checkbox" class="input-list__check">
               </li>
               <li class="input-list__row">
                 <input type="text" class="input-list__field" value="" readonly>
-                <span class="input-list__check"></span>
-              </li>
-              <li class="input-list__row">
-                <input type="text" class="input-list__field" value="" readonly>
-                <span class="input-list__check"></span>
-              </li>
-              <li class="input-list__row">
-                <input type="text" class="input-list__field" value="" readonly>
-                <span class="input-list__check"></span>
-              </li>
-              <li class="input-list__row">
-                <input type="text" class="input-list__field" value="" readonly>
-                <span class="input-list__check"></span>
+                <input type="checkbox" class="input-list__check">
               </li>
             </ul>
           </div>
@@ -77,21 +79,23 @@
           <h2 class="panel__heading">ToDoリスト</h2>
           <div class="panel__body">
             <ul class="todo-list" id="todo-display">
+              <!-- JS（detail.js）が読み込み時に、左側でチェックが入っている
+                   行から、このToDoリストを描画し直します。以下は初期表示用です。 -->
               <li class="todo-list__item">
                 <span class="todo-list__check"></span>
-                <span class="todo-list__label">企画書のレビュー</span>
+                <span class="todo-list__label">資料を事前に確認しておく</span>
               </li>
               <li class="todo-list__item">
                 <span class="todo-list__check"></span>
-                <span class="todo-list__label">メールの返信</span>
-              </li>
-              <li class="todo-list__item is-done">
-                <span class="todo-list__check"></span>
-                <span class="todo-list__label">週次報告の提出</span>
+                <span class="todo-list__label">買い物リストの整理</span>
               </li>
               <li class="todo-list__item">
                 <span class="todo-list__check"></span>
-                <span class="todo-list__label">資料の印刷</span>
+                <span class="todo-list__label">企画書のレビューを行う</span>
+              </li>
+              <li class="todo-list__item">
+                <span class="todo-list__check"></span>
+                <span class="todo-list__label">週次報告を提出する</span>
               </li>
             </ul>
           </div>

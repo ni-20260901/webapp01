@@ -367,22 +367,31 @@ body {
   color: #a7b3c2;
 }
 
+/* 識別ID:T-017：登録・削除チェックボックス（クリックで操作可能） */
 .input-list__check {
+  appearance: none;
+  -webkit-appearance: none;
   flex: 0 0 auto;
   width: 18px;
   height: 18px;
+  margin: 0;
   border: 1px solid var(--color-border-strong);
   border-radius: 3px;
   background: var(--color-bg-panel);
   position: relative;
+  cursor: pointer;
 }
 
-.input-list__check.is-checked {
+.input-list__check:hover {
+  border-color: var(--color-accent);
+}
+
+.input-list__check:checked {
   background: var(--color-accent);
   border-color: var(--color-accent);
 }
 
-.input-list__check.is-checked::after {
+.input-list__check:checked::after {
   content: "";
   position: absolute;
   left: 5px;

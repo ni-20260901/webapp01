@@ -21,57 +21,91 @@
 //   処理名   : 遷移実行
 //   場所     : 基本画面＞識別ID:T-009（編集ボタン）
 //   アクション: 選択した日付の詳細画面（detail.html）に遷移する。
-//   ※ 選択中の日付を detail.html に渡すため、URLクエリパラメータ
-//     （例：detail.html?day=15）を使用しています。
-//     試験実装のため、9/10・9/15・9/22の3日分のみデータがあります。
 //
-// ※ 保存・登録・削除など、他の機能一覧の行はまだ未実装です。
-//    ここでは日付ごとのメモ・ToDoデータを画面上に保持し、
-//    カレンダーの日付を選択した時に表示を切り替える処理と、
-//    選択した日付を詳細画面に引き継いで遷移する処理のみを
-//    実装しています。
+// 機能一覧 No.3・No.4 を実装しています（表示側）。
+//   処理ID   : S-003（チェックマーク登録）/ S-004（チェックマーク削除）
+//   場所     : 詳細画面＞識別ID:T-017（チェックボックス）
+//   アクション: T-017で、チェックを入れた行をToDoリストに表示する／
+//              チェックを外した行をToDoリストから削除する。
+//   ※ チェックボックス自体の操作は detail.html 側で行います。
+//     このファイルでは、detail.html 側での操作結果（どの行が
+//     チェックされているか）を localStorage 経由で読み込み、
+//     識別ID:T-005（本日のメモ）と識別ID:T-007（ToDoリスト）の
+//     表示に反映しています。
+//
+// ※ 保存・遷移・確定など、他の機能一覧の行はまだ未実装です。
+// ※ 日付ごとのメモ・ToDoデータは、識別ID:T-016（本日のメモ 各行の
+//    入力内容）を唯一のデータソースとして、
+//      ・本日のメモ（T-005）＝ 全行のテキストを連結したもの
+//      ・ToDoリスト（T-007） ＝ チェックが入っている行のテキスト
+//    としてその都度導出しています。試験実装のため、
+//    9/10・9/15・9/22の3日分のみ初期データがあります。
 // =========================================================
 
-interface TodoItem {
-  label: string;
-  done: boolean;
+interface MemoLine {
+  /** 識別ID:T-016（入力）1行分のテキスト */
+  text: string;
+  /** 識別ID:T-017（登録・削除チェックボックス）の状態 */
+  checked: boolean;
 }
 
-interface DayData {
-  /** 識別ID:T-016（入力）に相当する、その日の本日のメモの内容 */
-  memo: string;
-  /** その日のToDoリストの内容 */
-  todos: TodoItem[];
+type LinesStore = Record<string, MemoLine[]>;
+
+const LINES_PER_DAY = 10;
+const STORAGE_KEY = "memoAppLines";
+
+function emptyLines(): MemoLine[] {
+  return Array.from({ length: LINES_PER_DAY }, () => ({ text: "", checked: false }));
 }
 
-// 日付ごとのメモ・ToDoデータ（仮データ）
-// 本来は識別ID:T-016（詳細画面の入力欄）に入力された内容が
-// ここに保存される想定ですが、保存機能（S-005）は未実装のため、
-// 画面確認用の仮データとして用意しています。
-const memoData: Record<number, DayData> = {
-  10: {
-    memo: "14:00〜 定例会議\n資料を事前に確認しておく\n\n買い物リストの整理も忘れずに",
-    todos: [
-      { label: "企画書のレビュー", done: false },
-      { label: "メールの返信", done: false },
-      { label: "週次報告の提出", done: true },
-      { label: "資料の印刷", done: false },
-    ],
-  },
-  15: {
-    memo: "15:00〜 歯科検診\n帰りにクリーニング店に立ち寄る",
-    todos: [
-      { label: "検診の予約確認", done: true },
-      { label: "クリーニング受け取り", done: false },
-    ],
-  },
-  22: {
-    memo: "",
-    todos: [],
-  },
+function padLines(lines: MemoLine[]): MemoLine[] {
+  const result = emptyLines();
+  lines.forEach((line, index) => {
+    if (index < result.length) {
+      result[index] = line;
+    }
+  });
+  return result;
+}
+
+// 日付ごとの初期データ（仮データ・試験実装）
+// ※ detail.ts 側にも同じ内容を用意しています（重複）。
+//    保存機能（S-005）を実装する際は、共通のデータソースに
+//    まとめることを想定しています。
+const DEFAULT_LINES: Record<number, MemoLine[]> = {
+  10: padLines([
+    { text: "14:00〜 定例会議", checked: false },
+    { text: "資料を事前に確認しておく", checked: true },
+    { text: "買い物リストの整理", checked: true },
+    { text: "企画書のレビューを行う", checked: true },
+    { text: "メールの返信をする", checked: false },
+    { text: "週次報告を提出する", checked: true },
+  ]),
+  15: padLines([
+    { text: "15:00〜 歯科検診", checked: false },
+    { text: "帰りにクリーニング店に立ち寄る", checked: true },
+    { text: "検診の予約を確認する", checked: true },
+  ]),
+  22: padLines([]),
 };
 
-let selectedDay: number | null = null;
+function readStore(): LinesStore {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as LinesStore) : {};
+  } catch {
+    return {};
+  }
+}
+
+/** その日の識別ID:T-016（本日のメモ 各行）を読み込む */
+function loadLines(day: number): MemoLine[] {
+  const store = readStore();
+  const key = String(day);
+  if (store[key]) return padLines(store[key]);
+  if (DEFAULT_LINES[day]) return DEFAULT_LINES[day];
+  return emptyLines();
+}
 
 function escapeHtml(text: string): string {
   return text
@@ -85,8 +119,11 @@ function renderMemo(day: number): void {
   const memoEl = document.getElementById("memo-display");
   if (!memoEl) return;
 
-  const data = memoData[day];
-  const memoText = data ? data.memo : "";
+  const lines = loadLines(day);
+  const memoText = lines
+    .map((line) => line.text)
+    .filter((text) => text.trim() !== "")
+    .join("\n");
 
   if (memoText) {
     memoEl.innerHTML = escapeHtml(memoText).replace(/\n/g, "<br>");
@@ -95,17 +132,21 @@ function renderMemo(day: number): void {
   }
 }
 
-/** 識別ID:T-007（ToDoリスト）の表示を更新する */
+/** 識別ID:T-007（ToDoリスト）の表示を更新する
+ *  処理ID:S-003「チェックマーク登録」・S-004「チェックマーク削除」の反映
+ */
 function renderTodoList(day: number): void {
   const todoEl = document.getElementById("todo-display");
   if (!todoEl) return;
 
-  const data = memoData[day];
-  const todos = data ? data.todos : [];
+  const lines = loadLines(day);
+  const todoLabels = lines
+    .filter((line) => line.checked && line.text.trim() !== "")
+    .map((line) => line.text);
 
   todoEl.innerHTML = "";
 
-  if (todos.length === 0) {
+  if (todoLabels.length === 0) {
     const li = document.createElement("li");
     li.className = "todo-list__empty";
     li.textContent = "この日のToDoはありません";
@@ -113,22 +154,24 @@ function renderTodoList(day: number): void {
     return;
   }
 
-  todos.forEach((todo) => {
+  todoLabels.forEach((label) => {
     const li = document.createElement("li");
-    li.className = "todo-list__item" + (todo.done ? " is-done" : "");
+    li.className = "todo-list__item";
 
     const check = document.createElement("span");
     check.className = "todo-list__check";
 
-    const label = document.createElement("span");
-    label.className = "todo-list__label";
-    label.textContent = todo.label;
+    const labelEl = document.createElement("span");
+    labelEl.className = "todo-list__label";
+    labelEl.textContent = label;
 
     li.appendChild(check);
-    li.appendChild(label);
+    li.appendChild(labelEl);
     todoEl.appendChild(li);
   });
 }
+
+let selectedDay: number | null = null;
 
 /**
  * 識別ID:T-008（選択）：カレンダーで日付を選択したときの処理

@@ -25,10 +25,14 @@
           <h2 class="panel__heading">本日のメモ</h2>
           <div class="panel__body">
             <p class="memo-text" id="memo-display">
+              <!-- JS（script.js）が読み込み時に、選択中の日付のデータで
+                   この内容を描画し直します。以下は初期表示用です。 -->
               14:00〜 定例会議<br>
               資料を事前に確認しておく<br>
-              <br>
-              買い物リストの整理も忘れずに
+              買い物リストの整理<br>
+              企画書のレビューを行う<br>
+              メールの返信をする<br>
+              週次報告を提出する
             </p>
           </div>
         </section>
@@ -108,21 +112,24 @@
           <h2 class="panel__heading">ToDoリスト</h2>
           <div class="panel__body">
             <ul class="todo-list" id="todo-display">
+              <!-- JS（script.js）が読み込み時に、詳細画面でチェックが
+                   入っている行から、このToDoリストを描画し直します。
+                   以下は初期表示用です。 -->
               <li class="todo-list__item">
                 <span class="todo-list__check"></span>
-                <span class="todo-list__label">企画書のレビュー</span>
+                <span class="todo-list__label">資料を事前に確認しておく</span>
               </li>
               <li class="todo-list__item">
                 <span class="todo-list__check"></span>
-                <span class="todo-list__label">メールの返信</span>
-              </li>
-              <li class="todo-list__item is-done">
-                <span class="todo-list__check"></span>
-                <span class="todo-list__label">週次報告の提出</span>
+                <span class="todo-list__label">買い物リストの整理</span>
               </li>
               <li class="todo-list__item">
                 <span class="todo-list__check"></span>
-                <span class="todo-list__label">資料の印刷</span>
+                <span class="todo-list__label">企画書のレビューを行う</span>
+              </li>
+              <li class="todo-list__item">
+                <span class="todo-list__check"></span>
+                <span class="todo-list__label">週次報告を提出する</span>
               </li>
             </ul>
           </div>
