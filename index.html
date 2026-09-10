@@ -24,7 +24,7 @@
         <section class="panel panel--memo">
           <h2 class="panel__heading">本日のメモ</h2>
           <div class="panel__body">
-            <p class="memo-text">
+            <p class="memo-text" id="memo-display">
               14:00〜 定例会議<br>
               資料を事前に確認しておく<br>
               <br>
@@ -55,44 +55,44 @@
                   <tr>
                     <td class="is-blank"></td>
                     <td class="is-blank"></td>
-                    <td>1</td>
-                    <td>2</td>
-                    <td>3</td>
-                    <td>4</td>
-                    <td>5</td>
+                    <td><button type="button" class="calendar__day" data-day="1">1</button></td>
+                    <td><button type="button" class="calendar__day" data-day="2">2</button></td>
+                    <td><button type="button" class="calendar__day" data-day="3">3</button></td>
+                    <td><button type="button" class="calendar__day" data-day="4">4</button></td>
+                    <td><button type="button" class="calendar__day" data-day="5">5</button></td>
                   </tr>
                   <tr>
-                    <td>6</td>
-                    <td>7</td>
-                    <td>8</td>
-                    <td>9</td>
-                    <td class="is-today"><button type="button" class="calendar__day">10</button></td>
-                    <td>11</td>
-                    <td>12</td>
+                    <td><button type="button" class="calendar__day" data-day="6">6</button></td>
+                    <td><button type="button" class="calendar__day" data-day="7">7</button></td>
+                    <td><button type="button" class="calendar__day" data-day="8">8</button></td>
+                    <td><button type="button" class="calendar__day" data-day="9">9</button></td>
+                    <td class="is-today"><button type="button" class="calendar__day" data-day="10">10</button></td>
+                    <td><button type="button" class="calendar__day" data-day="11">11</button></td>
+                    <td><button type="button" class="calendar__day" data-day="12">12</button></td>
                   </tr>
                   <tr>
-                    <td>13</td>
-                    <td>14</td>
-                    <td>15</td>
-                    <td>16</td>
-                    <td>17</td>
-                    <td>18</td>
-                    <td>19</td>
+                    <td><button type="button" class="calendar__day" data-day="13">13</button></td>
+                    <td><button type="button" class="calendar__day" data-day="14">14</button></td>
+                    <td><button type="button" class="calendar__day" data-day="15">15</button></td>
+                    <td><button type="button" class="calendar__day" data-day="16">16</button></td>
+                    <td><button type="button" class="calendar__day" data-day="17">17</button></td>
+                    <td><button type="button" class="calendar__day" data-day="18">18</button></td>
+                    <td><button type="button" class="calendar__day" data-day="19">19</button></td>
                   </tr>
                   <tr>
-                    <td>20</td>
-                    <td>21</td>
-                    <td>22</td>
-                    <td>23</td>
-                    <td>24</td>
-                    <td>25</td>
-                    <td>26</td>
+                    <td><button type="button" class="calendar__day" data-day="20">20</button></td>
+                    <td><button type="button" class="calendar__day" data-day="21">21</button></td>
+                    <td><button type="button" class="calendar__day" data-day="22">22</button></td>
+                    <td><button type="button" class="calendar__day" data-day="23">23</button></td>
+                    <td><button type="button" class="calendar__day" data-day="24">24</button></td>
+                    <td><button type="button" class="calendar__day" data-day="25">25</button></td>
+                    <td><button type="button" class="calendar__day" data-day="26">26</button></td>
                   </tr>
                   <tr>
-                    <td>27</td>
-                    <td>28</td>
-                    <td>29</td>
-                    <td>30</td>
+                    <td><button type="button" class="calendar__day" data-day="27">27</button></td>
+                    <td><button type="button" class="calendar__day" data-day="28">28</button></td>
+                    <td><button type="button" class="calendar__day" data-day="29">29</button></td>
+                    <td><button type="button" class="calendar__day" data-day="30">30</button></td>
                     <td class="is-blank"></td>
                     <td class="is-blank"></td>
                     <td class="is-blank"></td>
@@ -107,7 +107,7 @@
         <section class="panel panel--todo">
           <h2 class="panel__heading">ToDoリスト</h2>
           <div class="panel__body">
-            <ul class="todo-list">
+            <ul class="todo-list" id="todo-display">
               <li class="todo-list__item">
                 <span class="todo-list__check"></span>
                 <span class="todo-list__label">企画書のレビュー</span>
