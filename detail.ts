@@ -3,6 +3,9 @@
 //
 // detail.html からは直接読み込めないため、コンパイル後の
 // detail.js を <script src="detail.js"> で読み込む構成です。
+// データの読み書きは storage.ts（storage.js）の MemoStorage 経由で
+// 行うため、detail.html では storage.js を detail.js より先に
+// 読み込んでください。
 //
 //   tsc detail.ts --target ES2020 --outFile detail.js
 //
@@ -21,27 +24,29 @@
 //   アクション: T-017で、チェックを入れた行をToDoリストに表示する／
 //              チェックを外した行をToDoリストから削除する。
 //   ※ チェックを操作すると、この画面内の識別ID:T-020（ToDoリスト
-//     参照表示）にはその場で反映されますが、実際にlocalStorageへ
-//     書き込む（基本画面に反映される）のは、識別ID:T-016のテキスト
-//     編集とあわせて、下記No.5の「保存」を押したタイミングです。
+//     参照表示）にはその場で反映されますが、実際に保存する
+//     （基本画面に反映される）のは、下記No.5「保存」・No.6「戻る」
+//     を押したタイミングです。
 //
 // 機能一覧 No.5 を実装しています。
 //   処理ID   : S-005 / 処理名: 保存実行
 //   場所     : 詳細画面＞識別ID:T-019（保存ボタン）
 //   アクション: 詳細画面の内容を保存し、ToDoリストを更新する。
-//   ※ 識別ID:T-016（本日のメモ 各行の入力欄）を編集可能にし、
-//     「保存」ボタン（T-019）を押すと、現在の入力欄・チェック
-//     ボックスの状態をまとめてlocalStorageに保存します。
-//     保存した内容は、基本画面（index.html）を開き直す（または
-//     カレンダーで日付を選び直す）と、識別ID:T-005（本日のメモ）・
-//     識別ID:T-007（ToDoリスト）に反映されます。
 //
-// ※ 遷移・確定（戻る、No.6）はまだ未実装です。
-//    試験実装のため、9/10・9/15・9/22の3日分のみ初期データがあります。
+// 機能一覧 No.6 を実装しています。
+//   処理ID   : S-006 / 処理名: 保存の確定・遷移
+//   場所     : 詳細画面＞識別ID:T-018（戻るボタン）
+//   アクション: 編集内容の保存を確定し、基本画面に遷移する。
+//   ※ 保存（S-005）と同様に現在の入力欄・チェックボックスの状態を
+//     保存したうえで、基本画面（index.html）に遷移します。
 //
-// ※ このファイルの初期データ（DEFAULT_LINES）は、index.html側の
-//    script.ts に定義されているものと同じ内容を、試験実装として
-//    重複して持たせています。
+// ※ 試験実装のため、9/10・9/15・9/22の3日分のみ初期データがあります。
+//
+// ※ データの保存先（localStorage）は、共通ファイル storage.ts の
+//   MemoStorage にまとめています。MemoStorage.load / save は
+//   Promiseを返す非同期の窓口のため、将来 storage.ts の中身を
+//   サーバーAPI通信に置き換えても、このファイルの書き方
+//   （await MemoStorage.load(day) など）を変える必要はありません。
 // =========================================================
 
 interface MemoLine {
@@ -51,79 +56,12 @@ interface MemoLine {
   checked: boolean;
 }
 
-type LinesStore = Record<string, MemoLine[]>;
-
-const LINES_PER_DAY = 10;
-const STORAGE_KEY = "memoAppLines";
-
-function emptyLines(): MemoLine[] {
-  return Array.from({ length: LINES_PER_DAY }, () => ({ text: "", checked: false }));
-}
-
-function padLines(lines: MemoLine[]): MemoLine[] {
-  const result = emptyLines();
-  lines.forEach((line, index) => {
-    if (index < result.length) {
-      result[index] = line;
-    }
-  });
-  return result;
-}
-
-// 日付ごとの初期データ（仮データ・試験実装）
-const DEFAULT_LINES: Record<number, MemoLine[]> = {
-  10: padLines([
-    { text: "14:00〜 定例会議", checked: false },
-    { text: "資料を事前に確認しておく", checked: true },
-    { text: "買い物リストの整理", checked: true },
-    { text: "企画書のレビューを行う", checked: true },
-    { text: "メールの返信をする", checked: false },
-    { text: "週次報告を提出する", checked: true },
-  ]),
-  15: padLines([
-    { text: "15:00〜 歯科検診", checked: false },
-    { text: "帰りにクリーニング店に立ち寄る", checked: true },
-    { text: "検診の予約を確認する", checked: true },
-  ]),
-  22: padLines([]),
+// storage.js（storage.ts）が提供するグローバルの型宣言
+// （実装は storage.ts 側にあり、ここでは型情報のみを宣言しています）
+declare const MemoStorage: {
+  load(day: number): Promise<MemoLine[]>;
+  save(day: number, lines: MemoLine[]): Promise<void>;
 };
-
-function readStore(): LinesStore {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as LinesStore) : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeStore(store: LinesStore): void {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-  } catch {
-    // localStorageが使用できない場合は何もしない（この画面内の表示のみ更新される）
-  }
-}
-
-/** その日の識別ID:T-016（本日のメモ 各行）を読み込む（保存済みの内容） */
-function loadLines(day: number): MemoLine[] {
-  const store = readStore();
-  const key = String(day);
-  if (store[key]) return padLines(store[key]);
-  if (DEFAULT_LINES[day]) return DEFAULT_LINES[day];
-  return emptyLines();
-}
-
-/**
- * 処理ID:S-005「保存実行」
- * その日の識別ID:T-016（本日のメモ 各行）をlocalStorageに保存する。
- * これにより、基本画面（index.html）側の識別ID:T-005・T-007にも反映される。
- */
-function saveLines(day: number, lines: MemoLine[]): void {
-  const store = readStore();
-  store[String(day)] = lines;
-  writeStore(store);
-}
 
 /** URLの ?day=15 からその値を取得する（無ければ null） */
 function getDayFromQuery(): number | null {
@@ -183,7 +121,7 @@ function renderTodoList(lines: MemoLine[]): void {
 
 let saveStatusTimer: number | undefined;
 
-/** 識別ID:T-019（保存ボタン）付近に、保存結果を一時的に表示する */
+/** 識別ID:T-019付近に、保存結果を一時的に表示する */
 function showSaveStatus(message: string): void {
   const statusEl = document.getElementById("save-status");
   if (!statusEl) return;
@@ -193,16 +131,18 @@ function showSaveStatus(message: string): void {
   if (saveStatusTimer !== undefined) {
     window.clearTimeout(saveStatusTimer);
   }
-  saveStatusTimer = window.setTimeout(() => {
-    statusEl.textContent = "";
-  }, 2500);
+  if (message) {
+    saveStatusTimer = window.setTimeout(() => {
+      statusEl.textContent = "";
+    }, 2500);
+  }
 }
 
 /**
  * 識別ID:T-016・T-017（入力欄・チェックボックス）を描画する。
  * 操作結果は lines（このページ内の作業用データ）にその場で反映し、
  * 識別ID:T-020（ToDoリスト）もあわせてプレビュー更新する。
- * 実際の保存（localStorageへの書き込み）は「保存」ボタンで行う。
+ * 実際の保存（MemoStorage.save）は「保存」「戻る」ボタンで行う。
  */
 function renderInputList(lines: MemoLine[]): void {
   const listEl = document.getElementById("input-list");
@@ -247,18 +187,38 @@ function renderInputList(lines: MemoLine[]): void {
 
 document.addEventListener("DOMContentLoaded", () => {
   const day = getDayFromQuery() ?? 10; // dayが無い場合は本日(10日)を既定表示とする
-  const lines = loadLines(day);
 
-  renderDateHeading(day);
-  renderInputList(lines);
-  renderTodoList(lines);
+  MemoStorage.load(day).then((lines) => {
+    renderDateHeading(day);
+    renderInputList(lines);
+    renderTodoList(lines);
 
-  const saveButton = document.getElementById("save-button");
-  if (saveButton) {
-    saveButton.addEventListener("click", () => {
-      saveLines(day, lines);
-      renderTodoList(lines);
-      showSaveStatus("保存しました");
-    });
-  }
+    /**
+     * 識別ID:T-019（保存ボタン）
+     * 処理ID:S-005「保存実行」
+     */
+    const saveButton = document.getElementById("save-button");
+    if (saveButton) {
+      saveButton.addEventListener("click", () => {
+        MemoStorage.save(day, lines).then(() => {
+          renderTodoList(lines);
+          showSaveStatus("保存しました");
+        });
+      });
+    }
+
+    /**
+     * 識別ID:T-018（戻るボタン）
+     * 処理ID:S-006「保存の確定・遷移」
+     */
+    const backButton = document.getElementById("back-button");
+    if (backButton) {
+      backButton.addEventListener("click", () => {
+        showSaveStatus("保存して戻ります…");
+        MemoStorage.save(day, lines).then(() => {
+          window.location.href = "index.html";
+        });
+      });
+    }
+  });
 });

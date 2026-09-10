@@ -190,14 +190,15 @@ body {
   background: var(--color-accent-dark);
 }
 
-/* 詳細画面「戻る」ボタンのみで使用するサブスタイル
-   ※ 遷移・確定（No.6）は未実装のため、あえてクリック可能に
-     見えないよう既定カーソルのままにしています。 */
+/* 詳細画面「戻る」ボタンのみで使用するサブスタイル */
 .action-bar__button--sub {
   color: var(--color-accent-dark);
   background: var(--color-bg-panel);
   border-color: var(--color-border-strong);
-  cursor: default;
+}
+
+.action-bar__button--sub:hover {
+  background: var(--color-bg-accent);
 }
 
 /* 識別ID:T-019（保存ボタン）：保存結果の一時的なメッセージ表示 */
