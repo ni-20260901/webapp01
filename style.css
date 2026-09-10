@@ -140,23 +140,28 @@ body {
   color: var(--color-text);
 }
 
+/* ToDoリストに表示される項目は、すべて登録済み（チェック済み）の
+   行のみなので、行頭のマークは常に塗りつぶして表示する */
 .todo-list__check {
   flex: 0 0 auto;
   width: 16px;
   height: 16px;
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--color-accent);
   border-radius: 4px;
-  background: var(--color-bg-panel);
-}
-
-.todo-list__item.is-done .todo-list__check {
   background: var(--color-accent);
-  border-color: var(--color-accent);
+  position: relative;
 }
 
-.todo-list__item.is-done .todo-list__label {
-  color: var(--color-text-sub);
-  text-decoration: line-through;
+.todo-list__check::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  transform: rotate(45deg);
 }
 
 /* -------------------------------------------------
