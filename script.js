@@ -17,9 +17,19 @@
 //              識別ID:T-005（本日のメモ）と識別ID:T-007（ToDoリスト）
 //              に表示させる。
 //
-// ※ 保存・登録・削除・遷移など、他の機能一覧の行はまだ未実装です。
+// 機能一覧 No.2 を実装しています。
+//   処理ID   : S-002
+//   処理名   : 遷移実行
+//   場所     : 基本画面＞識別ID:T-009（編集ボタン）
+//   アクション: 選択した日付の詳細画面（detail.html）に遷移する。
+//   ※ 選択中の日付を detail.html に渡すため、URLクエリパラメータ
+//     （例：detail.html?day=15）を使用しています。
+//     試験実装のため、9/10・9/15・9/22の3日分のみデータがあります。
+//
+// ※ 保存・登録・削除など、他の機能一覧の行はまだ未実装です。
 //    ここでは日付ごとのメモ・ToDoデータを画面上に保持し、
-//    カレンダーの日付を選択した時に表示を切り替える処理のみを
+//    カレンダーの日付を選択した時に表示を切り替える処理と、
+//    選択した日付を詳細画面に引き継いで遷移する処理のみを
 //    実装しています。
 // =========================================================
 // 日付ごとのメモ・ToDoデータ（仮データ）
@@ -116,6 +126,15 @@ function selectDay(day, dayButton) {
     renderMemo(day);
     renderTodoList(day);
 }
+/**
+ * 識別ID:T-009（編集ボタン）：選択した日付の詳細画面に遷移する処理
+ * 処理ID:S-002「遷移実行」
+ */
+function goToDetail() {
+    if (selectedDay === null)
+        return;
+    window.location.href = "detail.html?day=" + encodeURIComponent(String(selectedDay));
+}
 document.addEventListener("DOMContentLoaded", () => {
     const dayButtons = document.querySelectorAll(".calendar__day");
     dayButtons.forEach((button) => {
@@ -130,5 +149,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const initialButton = document.querySelector('.calendar__day[data-day="10"]');
     if (initialButton) {
         selectDay(10, initialButton);
+    }
+    const editButton = document.getElementById("edit-button");
+    if (editButton) {
+        editButton.addEventListener("click", goToDetail);
     }
 });

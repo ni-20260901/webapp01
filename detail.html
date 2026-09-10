@@ -25,9 +25,9 @@
 
         <!-- ⑭見出し4 / ⑯入力・⑰選択：本日のメモ 各行の入力欄 -->
         <section class="panel panel--input">
-          <h2 class="panel__heading">2026/09/10</h2>
+          <h2 class="panel__heading" id="date-heading">2026/09/10</h2>
           <div class="panel__body">
-            <ul class="input-list">
+            <ul class="input-list" id="input-list">
               <li class="input-list__row">
                 <input type="text" class="input-list__field" value="14:00〜 定例会議" readonly>
                 <span class="input-list__check is-checked"></span>
@@ -76,7 +76,7 @@
         <section class="panel panel--todo">
           <h2 class="panel__heading">ToDoリスト</h2>
           <div class="panel__body">
-            <ul class="todo-list">
+            <ul class="todo-list" id="todo-display">
               <li class="todo-list__item">
                 <span class="todo-list__check"></span>
                 <span class="todo-list__label">企画書のレビュー</span>
