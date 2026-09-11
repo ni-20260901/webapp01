@@ -25,21 +25,19 @@
           <h2 class="panel__heading">本日のメモ</h2>
           <div class="panel__body">
             <p class="memo-text" id="memo-display">
-              <!-- JS（script.js）が読み込み時に、選択中の日付のデータで
-                   この内容を描画し直します。以下は初期表示用です。 -->
-              14:00〜 定例会議<br>
-              資料を事前に確認しておく<br>
-              買い物リストの整理<br>
-              企画書のレビューを行う<br>
-              メールの返信をする<br>
-              週次報告を提出する
+              <!-- JS（script.js）が読み込み時に、当日（実際の実行日）の
+                   データのみでこの内容を描画します。固定の初期表示文言は
+                   持たせず、常にMemoStorageの実データと連動します。 -->
             </p>
           </div>
         </section>
 
         <!-- ③見出し2 / ⑥表示・⑧選択：カレンダー -->
         <section class="panel panel--calendar">
-          <h2 class="panel__heading">カレンダー</h2>
+          <!-- 識別ID:T-003（見出し2）：修正一覧No.5により「カレンダー　(yyyy/mm/dd)」
+               の形式に差し替え。日付部分はJS（script.js）が識別ID:T-005（本日のメモ）
+               と同じ日付（初期表示は当日、選択後は選択日）で描画し直します。 -->
+          <h2 class="panel__heading">カレンダー　<span id="calendar-date-label"></span></h2>
           <div class="panel__body">
             <div class="calendar">
               <div class="calendar__month">2026年9月</div>
@@ -70,7 +68,7 @@
                     <td><button type="button" class="calendar__day" data-day="7">7</button></td>
                     <td><button type="button" class="calendar__day" data-day="8">8</button></td>
                     <td><button type="button" class="calendar__day" data-day="9">9</button></td>
-                    <td class="is-today"><button type="button" class="calendar__day" data-day="10">10</button></td>
+                    <td><button type="button" class="calendar__day" data-day="10">10</button></td>
                     <td><button type="button" class="calendar__day" data-day="11">11</button></td>
                     <td><button type="button" class="calendar__day" data-day="12">12</button></td>
                   </tr>

@@ -14,8 +14,16 @@
 // 機能一覧 No.1 を実装しています。
 //   処理ID   : S-001 / 処理名: 選択実行
 //   場所     : 基本画面＞識別ID:T-008（カレンダーの日付選択）
-//   アクション: 選択した日付の識別ID:T-016（本日のメモ 各行の内容）を、
-//              識別ID:T-005（本日のメモ）に表示させる。
+//   アクション: 識別ID:T-006(カレンダー)から選択した日付の識別ID:T-016
+//              （入力内容）を、識別ID:T-005（本日のメモ）に表示させる。
+//
+// 【識別ID:T-005（本日のメモ）の初期表示についての仕様変更】
+// 画面を開いた直後（まだカレンダーで何も選択していない時点）のみ、
+// 固定のプレースホルダー文言ではなく、実際の当日（実行時の実日付）の
+// MemoStorage実データを表示します（表示中の月2026年9月と実際の年月が
+// 一致しない場合は「登録されていません」の表示になります）。
+// カレンダーで日付を選択した後は、以前と同じとおり選択した日付の
+// 内容に切り替わります（選択操作が働くのは処理ID:S-001のとおりです）。
 //   ※ 識別ID:T-007（ToDoリスト）については、下記のとおり仕様を
 //     変更したため、カレンダーの日付選択には連動しません。
 //
@@ -51,8 +59,27 @@ function escapeHtml(text) {
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
 }
-/** 識別ID:T-005（本日のメモ）の表示を更新する */
+function formatDateLabel(day) {
+    const dayText = String(day).padStart(2, "0");
+    return `2026/09/${dayText}`;
+}
+/**
+ * 識別ID:T-003（見出し2）の日付部分を更新する（修正一覧No.5）。
+ * 「カレンダー　(yyyy/mm/dd)」の (yyyy/mm/dd) にあたる部分を、
+ * 識別ID:T-005（本日のメモ）と同じ日付で描画する。
+ */
+function updateCalendarHeading(day) {
+    const labelEl = document.getElementById("calendar-date-label");
+    if (!labelEl)
+        return;
+    labelEl.textContent = `(${formatDateLabel(day)})`;
+}
+/**
+ * 識別ID:T-005（本日のメモ）の表示を更新する。
+ * あわせて識別ID:T-003（見出し2）の日付表示も同じ日付に更新する。
+ */
 async function renderMemo(day) {
+    updateCalendarHeading(day);
     const memoEl = document.getElementById("memo-display");
     if (!memoEl)
         return;
@@ -67,10 +94,6 @@ async function renderMemo(day) {
     else {
         memoEl.innerHTML = '<span class="empty-message">この日のメモは登録されていません</span>';
     }
-}
-function formatDateLabel(day) {
-    const dayText = String(day).padStart(2, "0");
-    return `2026/09/${dayText}`;
 }
 /**
  * 識別ID:T-007（ToDoリスト）の表示を更新する。
@@ -143,6 +166,8 @@ async function selectDay(day, dayButton) {
         cell.classList.add("is-selected");
     }
     selectedDay = day;
+    // カレンダーで日付を選択した後は、以前と同じとおり識別ID:T-005
+    // （本日のメモ）の表示を選択した日付の内容に切り替える。
     await renderMemo(day);
 }
 /**
@@ -154,6 +179,51 @@ function goToDetail() {
         return;
     window.location.href = "detail.html?day=" + encodeURIComponent(String(selectedDay));
 }
+/**
+ * カレンダーが表示している「2026年9月」と、実行時の実際の日付を
+ * 突き合わせ、当日にあたる日(1〜30)を返す。表示月と一致しない場合は
+ * null を返す（当日日マーク・本日のメモの当日連動の両方で共用する）。
+ */
+function getTodayDayInDisplayedMonth() {
+    const now = new Date();
+    const isDisplayedMonth = now.getFullYear() === 2026 && now.getMonth() === 8; // 8 = 9月(0始まり)
+    return isDisplayedMonth ? now.getDate() : null;
+}
+/**
+ * 識別ID:T-006（カレンダー）：当日日マーク（修正一覧No.4）
+ * 実際の「当日」の日付を判定し、その日のセルにだけ is-today クラスを
+ * 付与する（丸で囲み、内側部分と数字の色を反転させる表示は style.css 側）。
+ * カレンダーは「2026年9月」固定表示のため、実際の日付がこの年月と
+ * 一致する場合のみ丸印を付ける（一致しない場合はどの日にも付けない）。
+ * ※ カレンダーの初期選択（識別ID:T-008の初期状態）とは独立した処理。
+ */
+function markToday() {
+    const todayDay = getTodayDayInDisplayedMonth();
+    if (todayDay === null)
+        return;
+    const todayButton = document.querySelector(`.calendar__day[data-day="${todayDay}"]`);
+    const cell = todayButton?.closest("td");
+    if (cell) {
+        cell.classList.add("is-today");
+    }
+}
+/**
+ * 識別ID:T-005（本日のメモ）：当日の内容とだけ連動させる。
+ * カレンダーの選択状態には連動しない（詳細は本ファイル冒頭のコメント参照）。
+ * 表示月（2026年9月）と実際の当日が一致しない場合は、当日データが
+ * 存在しないため「登録されていません」の表示にする。
+ */
+async function renderTodayMemo() {
+    const todayDay = getTodayDayInDisplayedMonth();
+    if (todayDay === null) {
+        const memoEl = document.getElementById("memo-display");
+        if (memoEl) {
+            memoEl.innerHTML = '<span class="empty-message">この日のメモは登録されていません</span>';
+        }
+        return;
+    }
+    await renderMemo(todayDay);
+}
 document.addEventListener("DOMContentLoaded", () => {
     const dayButtons = document.querySelectorAll(".calendar__day");
     dayButtons.forEach((button) => {
@@ -164,11 +234,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     });
-    // 初期表示：本日の日付（2026/09/10）を選択状態にする
-    const initialButton = document.querySelector('.calendar__day[data-day="10"]');
-    if (initialButton) {
-        void selectDay(10, initialButton);
-    }
+    markToday();
+    void renderTodayMemo();
+    // ※ 以前は初期表示時に9/10を仮の選択状態にしていましたが、
+    //   当日マーク（is-today）との見分けが付きにくいため廃止しました。
+    //   初期状態ではどの日も未選択（識別ID:T-005は上記のとおり当日の
+    //   内容を表示）とし、カレンダーで日付を選択して初めて選択状態になり、
+    //   識別ID:T-005の表示もその選択日に切り替わります。
     // ToDoリストは日付選択に連動しないため、初回に一度だけ描画する
     void renderTodoListAll();
     const editButton = document.getElementById("edit-button");
