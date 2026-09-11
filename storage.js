@@ -96,6 +96,41 @@ function writeLocalStore(store) {
         // localStorageが使用できない場合は何もしない
     }
 }
+const ICON_STORAGE_KEY = "memoAppIcons";
+/**
+ * その日のToDoリスト（識別ID:T-020）に登録がある（チェック済みの行が
+ * 存在する）かどうかを判定する。
+ */
+function hasTodoItems(lines) {
+    return lines.some((line) => line.checked && line.text.trim() !== "");
+}
+/** その日の識別ID:T-016（本日のメモ 各行）を読み込む（load()と共通処理） */
+function getLinesForDay(day) {
+    const store = readLocalStore();
+    const key = String(day);
+    if (store[key])
+        return padLines(store[key]);
+    if (DEFAULT_LINES[day])
+        return DEFAULT_LINES[day];
+    return emptyLines();
+}
+function readIconStore() {
+    try {
+        const raw = window.localStorage.getItem(ICON_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+    }
+    catch {
+        return {};
+    }
+}
+function writeIconStore(store) {
+    try {
+        window.localStorage.setItem(ICON_STORAGE_KEY, JSON.stringify(store));
+    }
+    catch {
+        // localStorageが使用できない場合は何もしない
+    }
+}
 /**
  * 日付ごとのメモ・ToDoデータ（識別ID:T-016）の読み書きをまとめた窓口。
  * 画面側（script.ts / detail.ts）はこのオブジェクト経由でのみ
@@ -104,13 +139,7 @@ function writeLocalStore(store) {
 const MemoStorage = {
     /** その日の識別ID:T-016（本日のメモ 各行）を読み込む */
     load(day) {
-        const store = readLocalStore();
-        const key = String(day);
-        if (store[key])
-            return Promise.resolve(padLines(store[key]));
-        if (DEFAULT_LINES[day])
-            return Promise.resolve(DEFAULT_LINES[day]);
-        return Promise.resolve(emptyLines());
+        return Promise.resolve(getLinesForDay(day));
     },
     /** その日の識別ID:T-016（本日のメモ 各行）を保存する */
     save(day, lines) {
@@ -133,6 +162,60 @@ const MemoStorage = {
         });
         Object.keys(store).forEach((key) => {
             result[Number(key)] = padLines(store[key]);
+        });
+        return Promise.resolve(result);
+    },
+    /**
+     * 修正一覧No.6・No.7：その日の識別ID:T-020アイコン選択を読み込む。
+     * まだ一度も保存されていない場合（その日にToDoリストへの登録が
+     * あるとき）は、初期状態としてチェックマーク（☑️）を選択済みとする。
+     * 一度でも保存（選択解除の保存も含む）された後は、その内容を優先する。
+     */
+    loadIcon(day) {
+        const store = readIconStore();
+        const key = String(day);
+        if (Object.prototype.hasOwnProperty.call(store, key)) {
+            const value = store[key];
+            return Promise.resolve(value === "" ? null : value);
+        }
+        const lines = getLinesForDay(day);
+        return Promise.resolve(hasTodoItems(lines) ? "☑️" : null);
+    },
+    /**
+     * 修正一覧No.6・No.7：その日の識別ID:T-020アイコン選択を保存する。
+     * icon に null を渡すと選択解除として保存する（次回以降もデフォルトの
+     * チェックマーク表示に戻らないよう、明示的な「未選択」として記録する）。
+     */
+    saveIcon(day, icon) {
+        const store = readIconStore();
+        store[String(day)] = icon ?? "";
+        writeIconStore(store);
+        return Promise.resolve();
+    },
+    /**
+     * 修正一覧No.7：基本画面の識別ID:T-006（カレンダー）で、
+     * アイコンが選択されている日付分をまとめて読み込む。
+     * loadIcon() と同様、未保存かつToDo登録がある日は
+     * チェックマーク（☑️）をデフォルトとして含める。
+     */
+    loadAllIcons() {
+        const store = readIconStore();
+        const result = {};
+        const days = new Set();
+        Object.keys(DEFAULT_LINES).forEach((key) => days.add(Number(key)));
+        Object.keys(readLocalStore()).forEach((key) => days.add(Number(key)));
+        Object.keys(store).forEach((key) => days.add(Number(key)));
+        days.forEach((day) => {
+            const key = String(day);
+            if (Object.prototype.hasOwnProperty.call(store, key)) {
+                const value = store[key];
+                if (value !== "")
+                    result[day] = value;
+                return;
+            }
+            const lines = getLinesForDay(day);
+            if (hasTodoItems(lines))
+                result[day] = "☑️";
         });
         return Promise.resolve(result);
     },

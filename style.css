@@ -298,6 +298,7 @@ body {
   color: var(--color-text-sub);
   padding: 4px 0;
   border-bottom: 1px solid var(--color-border);
+  /* 修正一覧No.8：縦の罫線は曜日の行には引かず、下の罫線より下から始める */
 }
 
 .calendar__table th.is-sun {
@@ -309,15 +310,62 @@ body {
 }
 
 .calendar__table td {
-  text-align: center;
-  vertical-align: middle;
+  position: relative; /* 修正一覧No.7：該当日左下のアイコン表示の基準位置 */
+  text-align: left; /* 修正一覧No.9：日にちを枠の左上に再配置 */
+  vertical-align: top; /* 修正一覧No.9：日にちを枠の左上に再配置 */
   font-size: 0.8rem;
   color: var(--color-text);
-  padding: 2px;
+  padding: 4px;
+  /* 修正一覧No.8：曜日の下の罫線と同じ罫線で、日単位に区切る
+     （下端・右端の1マスだけは、カレンダーの枠に付かないよう線を引かない） */
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* 縦の罫線は border ではなく擬似要素で描画し、1行目だけ開始位置を
+   下げられるようにする（カレンダーの枠と同じ間隔＝panel__bodyの
+   paddingと同じ16pxだけ、曜日の下の罫線から離す） */
+.calendar__table td::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 1px;
+  background: var(--color-border);
+}
+
+.calendar__table td:last-child::after {
+  display: none; /* カレンダーの枠（右端）には付けない */
+}
+
+.calendar__table tbody tr:last-child td {
+  border-bottom: none; /* カレンダーの枠（下端）には付けない */
+}
+
+.calendar__table tbody tr:first-child td::after {
+  top: 16px; /* 曜日の下の罫線から、カレンダーの枠と同じ間隔をあけて開始 */
 }
 
 .calendar__table td.is-blank {
   color: transparent;
+}
+
+/* 修正一覧No.7：識別ID:T-020で選択したアイコンを、該当日の左下に表示
+   （絵文字ではなくCSSで描画。左の罫線との間隔(2px)と同じだけ、
+   底辺からも間隔をあける。大きさは絵文字表示時から175%拡大） */
+.calendar__day-icon {
+  position: absolute;
+  left: 2px;
+  bottom: 2px;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+
+/* .icon-shape（後述）の position:relative より詳細度を上げて上書きし、
+   カレンダー上ではあくまで枠内左下に絶対配置されるようにする */
+.calendar__day-icon.icon-shape {
+  position: absolute;
 }
 
 .calendar__day {
@@ -457,6 +505,131 @@ body {
   top: 1px;
   width: 5px;
   height: 9px;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  transform: rotate(45deg);
+}
+
+/* -------------------------------------------------
+   修正一覧No.6・No.7：識別ID:T-020のアイコン選択
+   ⑮見出し5の右端にプレビュー表示・⑳左下に選択UIを配置
+------------------------------------------------- */
+
+/* 見出し5（ToDoリスト）の右端にアイコンを表示するための整列 */
+.panel__heading--with-icon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 選択中は .icon-shape が付与され、幅・高さを持つ表示になる
+   （未選択時はクラスが付かず、幅0のまま何も表示しない） */
+.todo-heading-icon.icon-shape {
+  width: 12px;
+  height: 12px;
+  margin-left: 6px;
+}
+
+/* ⑳の本体（ToDoリスト表示）とアイコン選択UIを縦に並べ、
+   アイコン選択UIをパネル下部（左下）に配置する */
+.panel__body--with-icons {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.panel__body--with-icons .todo-list {
+  flex: 1 1 auto;
+}
+
+.icon-picker {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.icon-picker__button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.icon-picker__shape {
+  width: 18px;
+  height: 18px;
+}
+
+/* 幅(32px)×0.5 の間隔を空けて配置 */
+.icon-picker__button + .icon-picker__button {
+  margin-left: 16px;
+}
+
+.icon-picker__button:hover {
+  background: var(--color-bg-accent);
+}
+
+.icon-picker__button.is-selected {
+  background: var(--color-bg-accent);
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+
+/* -------------------------------------------------
+   絵文字（🔲🟦☑️）と同じ「形」をCSSで描画したアイコン。
+   識別ID:T-020の選択ボタン・T-015見出しのプレビュー・
+   T-006カレンダーの該当日マークの3箇所で共通して使う。
+------------------------------------------------- */
+.icon-shape {
+  display: inline-block;
+  box-sizing: border-box;
+  border-radius: 3px;
+  vertical-align: middle;
+  position: relative;
+}
+
+/* 3種類のアイコンの色を、真ん中の四角（塗りつぶし）の色に統一する */
+.icon-shape--outline,
+.icon-shape--filled,
+.icon-shape--check {
+  --icon-shape-color: #3b82f6;
+  --icon-shape-color-dark: #2f66c9;
+}
+
+/* 🔲 の代わり：白地に、塗りつぶし四角と同じ色の枠線 */
+.icon-shape--outline {
+  background: #ffffff;
+  border: 2px solid var(--icon-shape-color);
+}
+
+/* 🟦 の代わり：青の塗りつぶし四角 */
+.icon-shape--filled {
+  background: var(--icon-shape-color);
+  border: 1px solid var(--icon-shape-color-dark);
+}
+
+/* ☑️ の代わり：塗りつぶし四角と同じ色＋白いチェック */
+.icon-shape--check {
+  background: var(--icon-shape-color);
+  border: 1px solid var(--icon-shape-color-dark);
+}
+
+.icon-shape--check::after {
+  content: "";
+  position: absolute;
+  left: 25%;
+  top: 8%;
+  width: 26%;
+  height: 52%;
   border-right: 2px solid #ffffff;
   border-bottom: 2px solid #ffffff;
   transform: rotate(45deg);

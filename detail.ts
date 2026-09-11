@@ -43,6 +43,14 @@
 // 【操作性の追加】識別ID:T-016（入力欄）でEnterキーを押すと、
 //   次の行の入力欄にフォーカスを移動します（最終行では何もしません）。
 //
+// 【修正一覧No.6・No.7：識別ID:T-020のアイコン選択】
+//   識別ID:T-020（ToDoリスト）の左下に🔲🟦☑️の3種類のアイコンを配置し
+//   （No.6）、選択すると識別ID:T-015（見出し5）の右端にその場で
+//   プレビュー表示します。同じアイコンをもう一度選ぶと選択解除します。
+//   実際の保存（MemoStorage.saveIcon）・基本画面カレンダーへの反映は、
+//   本文の入力内容と同様に「保存」「戻る」ボタンを押したタイミングです
+//   （反映先は script.ts 側、識別ID:T-006の該当日左下です）（No.7）。
+//
 // ※ 試験実装のため、9/10・9/15・9/22の3日分のみ初期データがあります。
 //
 // ※ データの保存先（localStorage）は、共通ファイル storage.ts の
@@ -65,6 +73,9 @@ declare const MemoStorage: {
   load(day: number): Promise<MemoLine[]>;
   save(day: number, lines: MemoLine[]): Promise<void>;
   loadAll(): Promise<Record<number, MemoLine[]>>;
+  loadIcon(day: number): Promise<string | null>;
+  saveIcon(day: number, icon: string | null): Promise<void>;
+  loadAllIcons(): Promise<Record<number, string>>;
 };
 
 /** URLの ?day=15 からその値を取得する（無ければ null） */
@@ -121,6 +132,46 @@ function renderTodoList(lines: MemoLine[]): void {
     li.appendChild(labelEl);
     todoEl.appendChild(li);
   });
+}
+
+/**
+ * 修正一覧No.6・No.7：識別ID:T-020のアイコン選択UIと、
+ * 識別ID:T-015（見出し5）右端のプレビュー表示を更新する。
+ */
+/**
+ * 選択された絵文字（🔲🟦☑️）に対応する、CSSで描画したアイコンの
+ * クラス名を返す（.icon-shape と組み合わせて使う）。
+ */
+function iconShapeClass(icon: string): string | null {
+  switch (icon) {
+    case "🔲":
+      return "icon-shape--outline";
+    case "🟦":
+      return "icon-shape--filled";
+    case "☑️":
+      return "icon-shape--check";
+    default:
+      return null;
+  }
+}
+
+function renderIconPicker(selectedIcon: string | null): void {
+  document.querySelectorAll<HTMLButtonElement>(".icon-picker__button").forEach((button) => {
+    const isSelected = button.dataset.icon === selectedIcon;
+    button.classList.toggle("is-selected", isSelected);
+    button.setAttribute("aria-pressed", String(isSelected));
+  });
+
+  const headingIconEl = document.getElementById("todo-heading-icon");
+  if (headingIconEl) {
+    // 絵文字ではなく、.icon-shape のCSS描画に差し替え。
+    // 未選択時はクラスを外し、幅0のまま何も表示しない。
+    headingIconEl.className = "todo-heading-icon";
+    const shapeClass = selectedIcon ? iconShapeClass(selectedIcon) : null;
+    if (shapeClass) {
+      headingIconEl.classList.add("icon-shape", shapeClass);
+    }
+  }
 }
 
 let saveStatusTimer: number | undefined;
@@ -203,10 +254,27 @@ function renderInputList(lines: MemoLine[]): void {
 document.addEventListener("DOMContentLoaded", () => {
   const day = getDayFromQuery() ?? 10; // dayが無い場合は本日(10日)を既定表示とする
 
-  MemoStorage.load(day).then((lines) => {
+  Promise.all([MemoStorage.load(day), MemoStorage.loadIcon(day)]).then(([lines, savedIcon]) => {
+    // 修正一覧No.6・No.7：このページ内での作業用データ（保存前の選択状態）
+    let selectedIcon: string | null = savedIcon;
+
     renderDateHeading(day);
     renderInputList(lines);
     renderTodoList(lines);
+    renderIconPicker(selectedIcon);
+
+    /**
+     * 修正一覧No.6：識別ID:T-020左下のアイコン選択（🔲🟦☑️）。
+     * 選択中のものをもう一度押すと選択解除する。
+     */
+    document.querySelectorAll<HTMLButtonElement>(".icon-picker__button").forEach((button) => {
+      button.addEventListener("click", () => {
+        const clickedIcon = button.dataset.icon ?? null;
+        selectedIcon = selectedIcon === clickedIcon ? null : clickedIcon;
+        renderIconPicker(selectedIcon);
+        showSaveStatus("");
+      });
+    });
 
     /**
      * 識別ID:T-019（保存ボタン）
@@ -215,7 +283,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const saveButton = document.getElementById("save-button");
     if (saveButton) {
       saveButton.addEventListener("click", () => {
-        MemoStorage.save(day, lines).then(() => {
+        Promise.all([
+          MemoStorage.save(day, lines),
+          MemoStorage.saveIcon(day, selectedIcon),
+        ]).then(() => {
           renderTodoList(lines);
           showSaveStatus("保存しました");
         });
@@ -230,7 +301,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (backButton) {
       backButton.addEventListener("click", () => {
         showSaveStatus("保存して戻ります…");
-        MemoStorage.save(day, lines).then(() => {
+        Promise.all([
+          MemoStorage.save(day, lines),
+          MemoStorage.saveIcon(day, selectedIcon),
+        ]).then(() => {
           window.location.href = "index.html";
         });
       });

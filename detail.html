@@ -76,8 +76,11 @@
 
         <!-- ⑮見出し5 / ⑳表示：ToDoリスト（参照表示） -->
         <section class="panel panel--todo">
-          <h2 class="panel__heading">ToDoリスト</h2>
-          <div class="panel__body">
+          <!-- 修正一覧No.7：見出し5の右端に、下記アイコン選択の結果を表示 -->
+          <h2 class="panel__heading panel__heading--with-icon">
+            ToDoリスト<span class="todo-heading-icon" id="todo-heading-icon"></span>
+          </h2>
+          <div class="panel__body panel__body--with-icons">
             <ul class="todo-list" id="todo-display">
               <!-- JS（detail.js）が読み込み時に、左側でチェックが入っている
                    行から、このToDoリストを描画し直します。以下は初期表示用です。 -->
@@ -98,6 +101,14 @@
                 <span class="todo-list__label">週次報告を提出する</span>
               </li>
             </ul>
+            <!-- 修正一覧No.6：識別ID:T-020左下のアイコン選択（🔲🟦☑️）。
+                 JS（detail.js）が選択状態を描画し、クリックで選択・解除します。 -->
+            <div class="icon-picker" id="icon-picker" role="group" aria-label="ToDoリストのアイコン選択">
+              <!-- 絵文字ではなく、絵文字と同じ形をCSSで描画したもの（icon-shape）に差し替え -->
+              <button type="button" class="icon-picker__button" data-icon="🔲" aria-label="アイコン（白四角）を選択" aria-pressed="false"><span class="icon-picker__shape icon-shape icon-shape--outline" aria-hidden="true"></span></button>
+              <button type="button" class="icon-picker__button" data-icon="🟦" aria-label="アイコン（青四角）を選択" aria-pressed="false"><span class="icon-picker__shape icon-shape icon-shape--filled" aria-hidden="true"></span></button>
+              <button type="button" class="icon-picker__button" data-icon="☑️" aria-label="アイコン（チェック）を選択" aria-pressed="false"><span class="icon-picker__shape icon-shape icon-shape--check" aria-hidden="true"></span></button>
+            </div>
           </div>
         </section>
 

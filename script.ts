@@ -47,9 +47,16 @@
 // そのため、カレンダーで日付を選んでも識別ID:T-007の表示内容は
 // 変わりません（識別ID:T-005「本日のメモ」だけが切り替わります）。
 //
-// ※ MemoStorage.load / save / loadAll は Promise を返す非同期の
-//   窓口のため、将来 storage.ts の中身をサーバーAPI通信に
-//   置き換えても、このファイルの書き方を変える必要はありません。
+// 【修正一覧No.6・No.7：識別ID:T-006カレンダーのアイコン表示】
+// 詳細画面（識別ID:T-020）で🔲🟦☑️のいずれかを選択して保存すると、
+// その日の識別ID:T-006（カレンダー）該当セルの左下にそのアイコンを
+// 表示します（renderDayIcons）。読み込み専用（このファイル側では
+// アイコンの選択操作は行いません）。
+//
+// ※ MemoStorage.load / save / loadAll / loadIcon / saveIcon /
+//   loadAllIcons は Promise を返す非同期の窓口のため、将来
+//   storage.ts の中身をサーバーAPI通信に置き換えても、
+//   このファイルの書き方を変える必要はありません。
 // =========================================================
 
 interface MemoLine {
@@ -63,6 +70,9 @@ declare const MemoStorage: {
   load(day: number): Promise<MemoLine[]>;
   save(day: number, lines: MemoLine[]): Promise<void>;
   loadAll(): Promise<Record<number, MemoLine[]>>;
+  loadIcon(day: number): Promise<string | null>;
+  saveIcon(day: number, icon: string | null): Promise<void>;
+  loadAllIcons(): Promise<Record<number, string>>;
 };
 
 let selectedDay: number | null = null;
@@ -265,6 +275,50 @@ async function renderTodayMemo(): Promise<void> {
   await renderMemo(todayDay);
 }
 
+/**
+ * 修正一覧No.7：詳細画面（識別ID:T-020）で選択されたアイコンを、
+ * 識別ID:T-006（カレンダー）の該当日セル左下に表示する。
+ */
+/**
+ * 選択された絵文字（🔲🟦☑️）に対応する、CSSで描画したアイコンの
+ * クラス名を返す（.icon-shape と組み合わせて使う）。
+ */
+function iconShapeClass(icon: string): string | null {
+  switch (icon) {
+    case "🔲":
+      return "icon-shape--outline";
+    case "🟦":
+      return "icon-shape--filled";
+    case "☑️":
+      return "icon-shape--check";
+    default:
+      return null;
+  }
+}
+
+async function renderDayIcons(): Promise<void> {
+  const icons = await MemoStorage.loadAllIcons();
+
+  document.querySelectorAll<HTMLButtonElement>(".calendar__day").forEach((button) => {
+    const day = Number(button.dataset.day);
+    const cell = button.closest("td");
+    if (!cell) return;
+
+    let iconEl = cell.querySelector<HTMLSpanElement>(".calendar__day-icon");
+    if (!iconEl) {
+      iconEl = document.createElement("span");
+      cell.appendChild(iconEl);
+    }
+    // 絵文字ではなく、.icon-shape のCSS描画に差し替え。
+    iconEl.className = "calendar__day-icon";
+    const icon = icons[day];
+    const shapeClass = icon ? iconShapeClass(icon) : null;
+    if (shapeClass) {
+      iconEl.classList.add("icon-shape", shapeClass);
+    }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const dayButtons = document.querySelectorAll<HTMLButtonElement>(".calendar__day");
 
@@ -279,6 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   markToday();
   void renderTodayMemo();
+  void renderDayIcons();
 
   // ※ 以前は初期表示時に9/10を仮の選択状態にしていましたが、
   //   当日マーク（is-today）との見分けが付きにくいため廃止しました。
