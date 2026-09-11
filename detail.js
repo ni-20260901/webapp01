@@ -41,6 +41,9 @@
 //   ※ 保存（S-005）と同様に現在の入力欄・チェックボックスの状態を
 //     保存したうえで、基本画面（index.html）に遷移します。
 //
+// 【操作性の追加】識別ID:T-016（入力欄）でEnterキーを押すと、
+//   次の行の入力欄にフォーカスを移動します（最終行では何もしません）。
+//
 // ※ 試験実装のため、9/10・9/15・9/22の3日分のみ初期データがあります。
 //
 // ※ データの保存先（localStorage）は、共通ファイル storage.ts の
@@ -138,6 +141,17 @@ function renderInputList(lines) {
             lines[index] = { ...lines[index], text: input.value };
             renderTodoList(lines);
             showSaveStatus("");
+        });
+        // Enterキーで次の行の入力欄に移動する（最終行の場合は何もしない）
+        input.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter")
+                return;
+            event.preventDefault();
+            const nextRow = li.nextElementSibling;
+            if (!nextRow)
+                return;
+            const nextInput = nextRow.querySelector(".input-list__field");
+            nextInput?.focus();
         });
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
